@@ -76,6 +76,14 @@ public class UploadActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // lấy avartar lưu săẵn
+        PreferenceManager preferenceManager = new PreferenceManager(this);
+        String imgUrl = preferenceManager.getUserImageUrl();
+
+        if (imgUrl != null) {
+            Glide.with(this).load(imgUrl).into(uploadImagePreview);
+        }
     }
 
     // Mở trình chọn ảnh
@@ -108,10 +116,6 @@ public class UploadActivity extends AppCompatActivity {
 
         String imagePath = RealPathUtil.getRealPath(this, imageUri); // Lấy đường dẫn thực của ảnh
         File imageFile = new File(imagePath);
-//        RequestBody imageBody = RequestBody.create(MediaType.parse("multipart/form-data"), imageFile);
-//
-//        // Tạo multipart body cho ảnh
-//        MultipartBody.Part imagePart = MultipartBody.Part.createFormData(imageKey, imageFile.getName(), imageBody);
 
 
         RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), imageFile);
@@ -128,7 +132,18 @@ public class UploadActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     ImageUpload imageUpload = response.body();
                     String imgUrl = fileUrl + imageUpload.getAvatar();
+
+                    PreferenceManager preferenceManager = new PreferenceManager(UploadActivity.this);
+
+                    // Lưu URL ảnh
+                    preferenceManager.saveUserImageUrl(imgUrl);
+
                     Glide.with(UploadActivity.this).load(imgUrl).into(uploadImagePreview);
+
+                    // chuyển về main
+                    Intent intent = new Intent(UploadActivity.this, MainActivity.class);
+                    startActivity(intent);
+
                 } else {
                     Toast.makeText(UploadActivity.this, "Upload thất bại", Toast.LENGTH_SHORT).show();
                 }
